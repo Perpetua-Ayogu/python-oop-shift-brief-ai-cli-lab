@@ -668,3 +668,12 @@ After completing the lab, answer these questions for yourself:
 4. Why should the AI client stay generic instead of including shift-handoff-specific language?
 5. How did the tests help guide your implementation?
 6. How could this reusable client pattern transfer later into a Flask API, RAG workflow, or full-stack AI application?
+# Completed lab: Module 7 — Shift Brief AI CLI
+
+Run `python -m lib.shift_cli` or `python lib/shift_cli.py`. Install `requirements.txt`. The generic client handles history and rollback, the builder owns brief prompts and structure checks, and the CLI owns commands. Real generation requires a running Ollama service and the `llama3.2` model. Live generation is not verified; the local endpoint was unavailable.
+
+Validation: 80 mocked-service tests passed. Run `python -m pytest --assert=plain -q` from the repository root after installing test dependencies. The plain-assertion option supports the pinned pytest on Python 3.14.
+
+![Verified test results](docs/test-results.png)
+
+The image shows captured test output rendered for documentation. Canvas accepts this repository URL for submission.
