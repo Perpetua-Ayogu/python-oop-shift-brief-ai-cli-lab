@@ -1,5 +1,9 @@
-from ai_client import OllamaChatClient
-from brief_builder import HandoffBriefBuilder
+if __package__:
+    from .ai_client import OllamaChatClient
+    from .brief_builder import HandoffBriefBuilder
+else:
+    from ai_client import OllamaChatClient
+    from brief_builder import HandoffBriefBuilder
 
 
 class ShiftBriefCLI:
@@ -27,8 +31,8 @@ class ShiftBriefCLI:
         - Mention that this is a shift handoff brief CLI.
         - Include the available commands.
         """
-        # TODO: Print welcome text and command help.
-        pass
+        print("Shift Handoff Brief CLI")
+        print(self.command_help())
 
     def command_help(self):
         """
@@ -43,8 +47,12 @@ class ShiftBriefCLI:
         - exit
         - quit
         """
-        # TODO: Return a string describing the available commands.
-        pass
+        return (
+            "brief <shift notes> - Create a brief\n"
+            "revise <feedback> - Revise the previous brief\n"
+            "history - Show conversation message count\n"
+            "reset - Clear history\nhelp - Show commands\nexit or quit - Stop"
+        )
 
     def handle_command(self, raw_input):
         """
@@ -64,11 +72,35 @@ class ShiftBriefCLI:
         - ValueError should become a readable Input Error.
         - RuntimeError should become a readable Service Error.
         """
-        # TODO: Validate raw_input.
-        # TODO: Parse the command and payload.
-        # TODO: Route supported commands.
-        # TODO: Return helpful messages for errors and unknown commands.
-        pass
+        if not isinstance(raw_input, str) or not raw_input.strip():
+            return "Input Error: Enter a command."
+        parts = raw_input.strip().split(maxsplit=1)
+        command = parts[0].lower()
+        payload = parts[1].strip() if len(parts) > 1 else ""
+        try:
+            if command == "brief":
+                if not payload:
+                    raise ValueError("Shift notes cannot be empty.")
+                return self.brief_builder.create_brief(self.ai_client, payload)
+            if command == "revise":
+                if not payload:
+                    raise ValueError("Revision feedback cannot be empty.")
+                return self.brief_builder.revise_brief(self.ai_client, payload)
+            if command == "history":
+                return f"Conversation messages: {self.ai_client.message_count()}"
+            if command == "reset":
+                self.ai_client.reset()
+                return "Conversation history reset."
+            if command == "help":
+                return self.command_help()
+            if command in ("exit", "quit"):
+                self.running = False
+                return "Goodbye!"
+            return "Input Error: Unknown command. Type help for commands."
+        except ValueError as error:
+            return f"Input Error: {error}"
+        except RuntimeError as error:
+            return f"Service Error: {error}"
 
     def run(self):
         """
@@ -82,9 +114,15 @@ class ShiftBriefCLI:
         - Print returned messages.
         - Stop cleanly if EOFError occurs.
         """
-        # TODO: Display welcome text.
-        # TODO: Run the input loop.
-        pass
+        self.display_welcome()
+        while self.running:
+            try:
+                command = input("> ")
+            except (EOFError, KeyboardInterrupt):
+                self.running = False
+                print("Goodbye!")
+                break
+            print(self.handle_command(command))
 
 
 def main():
